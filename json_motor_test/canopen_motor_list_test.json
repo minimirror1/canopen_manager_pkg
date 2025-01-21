@@ -5,21 +5,30 @@
             "vendor_type": "VendorZeroErr", 
             "node_id": 11,            
             "zero_offset": 84303,
-            "operation_mode": "PROFILE_POSITION"
+            "operation_mode": "PROFILE_POSITION",
+            "profile_velocity": 2144,
+            "profile_acceleration": 2144,
+            "profile_deceleration": 2144
         },
         {
             "name": "motorB",
             "vendor_type": "VendorZeroErr",
             "node_id": 2,
             "zero_offset": 84303,
-            "operation_mode": "PROFILE_POSITION"
+            "operation_mode": "PROFILE_POSITION",
+            "profile_velocity": 2144,
+            "profile_acceleration": 2144,
+            "profile_deceleration": 2144
         },
         {
             "name": "motorC",
             "vendor_type": "VendorZeroErr",
             "node_id": 3,
             "zero_offset": 84303,
-            "operation_mode": "PROFILE_POSITION"
+            "operation_mode": "PROFILE_POSITION",
+            "profile_velocity": 2144,
+            "profile_acceleration": 2144,
+            "profile_deceleration": 2144
         }
     ]
 }

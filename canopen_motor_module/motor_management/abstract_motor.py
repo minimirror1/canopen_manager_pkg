@@ -15,7 +15,8 @@ class AbstractMotor(ABC):
         'CYCLIC_SYNC_TORQUE': 0x0A
     }
 
-    def __init__(self, node_id, eds_path, zero_offset=0, operation_mode='PROFILE_POSITION'):
+    def __init__(self, node_id, eds_path, zero_offset=0, operation_mode='PROFILE_POSITION',
+                 profile_velocity=162144, profile_acceleration=162144, profile_deceleration=162144):
         self.operation_mode = operation_mode
         self.node_id = node_id
         self.eds_path = eds_path
@@ -32,6 +33,11 @@ class AbstractMotor(ABC):
         self.current_velocity = 0       # 현재 속도값 저장용 변수
         self.current_velocity_old = 0   # 이전 속도값 저장용 변수
         self.current_acceleration = 0   # 현재 가속도값 저장용 변수
+
+        # 프로파일 파라미터 추가
+        self.profile_velocity = profile_velocity
+        self.profile_acceleration = profile_acceleration
+        self.profile_deceleration = profile_deceleration
 
     @abstractmethod
     def init(self):

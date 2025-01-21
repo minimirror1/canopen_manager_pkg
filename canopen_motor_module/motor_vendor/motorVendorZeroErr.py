@@ -7,8 +7,10 @@ class MotorVendorZeroErr(AbstractMotor):
     """제조사 A 모터에 대한 구체 구현."""
     PULSE_PER_REVOLUTION = 524288  # 한 바퀴당 펄스 수
     
-    def __init__(self, node_id, eds_path, zero_offset=0, operation_mode='PROFILE_POSITION'):
-        super().__init__(node_id, eds_path, zero_offset, operation_mode)
+    def __init__(self, node_id, eds_path, zero_offset=0, operation_mode='PROFILE_POSITION',
+                 profile_velocity=162144, profile_acceleration=162144, profile_deceleration=162144):
+        super().__init__(node_id, eds_path, zero_offset, operation_mode,
+                        profile_velocity, profile_acceleration, profile_deceleration)
         
     def init(self, operation_mode=None):
         if operation_mode:
@@ -38,9 +40,9 @@ class MotorVendorZeroErr(AbstractMotor):
     def _init_mode_specific_parameters(self):
         """모드별 특정 파라미터 초기화"""
         if self.operation_mode == 'PROFILE_POSITION':
-            self.node.sdo['Profile velocity'].raw = 524288 #0x6081
-            self.node.sdo['Profile acceleration'].raw = 2621440 #0x6083
-            self.node.sdo['Profile deceleration'].raw = 2621440 #0x6084
+            self.node.sdo['Profile velocity'].raw = self.profile_velocity  #0x6081
+            self.node.sdo['Profile acceleration'].raw = self.profile_acceleration  #0x6083
+            self.node.sdo['Profile deceleration'].raw = self.profile_deceleration  #0x6084
             print(f'[write] Profile parameters set for Position mode')
             
         elif self.operation_mode == 'PROFILE_TORQUE':

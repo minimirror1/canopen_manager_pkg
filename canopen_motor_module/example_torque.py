@@ -68,7 +68,7 @@ def main():
     controller.sync_start(0.01)
 
 
-    controller.set_position(TEST_ID, 0)
+    controller.set_position(TEST_ID, 262144)
 
     time.sleep(2)
     # 로그 기록 시작

@@ -30,9 +30,12 @@ class CANopenManagerNode(Node):
         for motor in motor_config['motors']:
             motor_obj = MotorFactory.create_motor(
                 vendor_type=motor['vendor_type'],
-                node_id=motor['node_id'],                
+                node_id=motor['node_id'],
                 zero_offset=motor['zero_offset'],
-                operation_mode=motor['operation_mode']
+                operation_mode=motor['operation_mode'],
+                profile_velocity=motor.get('profile_velocity', 0),
+                profile_acceleration=motor.get('profile_acceleration', 0),
+                profile_deceleration=motor.get('profile_deceleration', 0)
             )
             motors.append(motor_obj)
 
@@ -44,7 +47,10 @@ class CANopenManagerNode(Node):
         controller.pdo_mapping_all()
         controller.set_switchOn_all()
         controller.pdo_callback_register_all()
-        controller.sync_start(0.01)        
+        controller.sync_start(0.01)
+        controller.set_position(11, 262144)
+        controller.set_position(2, 262144)
+        controller.set_position(3, 262144)
         
         
 
