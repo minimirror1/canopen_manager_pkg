@@ -1,0 +1,25 @@
+{
+    "motors": [
+        {
+            "name": "motorA",
+            "vendor_type": "VendorZeroErr", 
+            "node_id": 11,            
+            "zero_offset": 84303,
+            "operation_mode": "PROFILE_POSITION"
+        },
+        {
+            "name": "motorB",
+            "vendor_type": "VendorZeroErr",
+            "node_id": 2,
+            "zero_offset": 84303,
+            "operation_mode": "PROFILE_POSITION"
+        },
+        {
+            "name": "motorC",
+            "vendor_type": "VendorZeroErr",
+            "node_id": 3,
+            "zero_offset": 84303,
+            "operation_mode": "PROFILE_POSITION"
+        }
+    ]
+}

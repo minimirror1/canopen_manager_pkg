@@ -2,6 +2,11 @@ import rclpy
 from rclpy.node import Node
 from canopen_motor_module.motor_management.motor_controller import MotorController
 from canopen_motor_module.motor_management.motor_factory import MotorFactory
+
+import json
+import os
+from ament_index_python.packages import get_package_share_directory
+
 TEST_ID = 11
 class CANopenManagerNode(Node):
     def __init__(self):
@@ -9,8 +14,31 @@ class CANopenManagerNode(Node):
         self.get_logger().info('CANopen Manager Node has been started')
 
         controller = MotorController(channel='can0', bustype='socketcan', bitrate=1000000)
-        motorA = MotorFactory.create_motor("VendorZeroErr", TEST_ID, "config/ZeroErr Driver_V1.5.eds", zero_offset=84303, operation_mode='PROFILE_POSITION')
-        controller.add_motor(motorA)
+
+
+
+        # json 파일 경로 설정
+        package_path = get_package_share_directory('canopen_manager_pkg')
+        json_path = os.path.join(package_path, 'json_motor_test', 'canopen_motor_list_test.json')
+
+        # json 파일 읽기
+        with open(json_path, 'r') as f:
+            motor_config = json.load(f)
+
+        # json 파일의 모터 정보를 바탕으로 모터 객체 생성
+        motors = []
+        for motor in motor_config['motors']:
+            motor_obj = MotorFactory.create_motor(
+                vendor_type=motor['vendor_type'],
+                node_id=motor['node_id'],                
+                zero_offset=motor['zero_offset'],
+                operation_mode=motor['operation_mode']
+            )
+            motors.append(motor_obj)
+
+        for motor in motors:
+            controller.add_motor(motor)
+
         controller.reset_all()
         controller.init_all()
         controller.pdo_mapping_all()

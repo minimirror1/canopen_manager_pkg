@@ -11,6 +11,7 @@ setup(
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
         ('share/' + package_name + '/config', ['canopen_motor_module/config/ZeroErr Driver_V1.5.eds']),
+        ('share/' + package_name + '/json_motor_test', ['json_motor_test/canopen_motor_list_test.json']),
     ],
     install_requires=['setuptools', 'canopen', 'serial', 'time', 'math', 'random'],
     zip_safe=True,
