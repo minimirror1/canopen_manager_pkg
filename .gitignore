@@ -1,0 +1,73 @@
+# ROS 2 추가 무시 항목
+.pytest_cache/
+.coverage
+coverage.xml
+*.launch.py~
+*.yaml~
+*.urdf~
+*.xacro~
+*.rviz~
+*.bag
+rosbag2_*
+.ros/
+
+# colcon 빌드 관련
+build_isolated/
+install_isolated/
+devel/
+devel_isolated/
+.colcon_cd_root
+.colcon/
+
+# ROS 2 의존성 관련
+.dependencies/
+.catkin_tools/
+.catkin_workspace
+
+# ROS 2 메시지/서비스 생성 관련
+*_msgs/msg/_*.py
+*_msgs/srv/_*.py
+*_msgs/*_pb2.py
+
+# ROS 2 관련
+build/
+install/
+log/
+
+# Python 관련
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# IDE 관련
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# 시스템 관련
+.DS_Store
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# 로그 파일
+*.log
