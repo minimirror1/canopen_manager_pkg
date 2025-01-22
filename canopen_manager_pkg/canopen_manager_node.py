@@ -16,9 +16,7 @@ class CANopenManagerNode(Node):
         super().__init__('canopen_manager_node')
         self.get_logger().info('CANopen Manager Node has been started')
 
-        controller = MotorController(channel='can0', bustype='socketcan', bitrate=1000000)
-
-
+        self.controller = MotorController(channel='can0', bustype='socketcan', bitrate=1000000)
 
         # json 파일 경로 설정
         package_path = get_package_share_directory('canopen_manager_pkg')
@@ -43,18 +41,18 @@ class CANopenManagerNode(Node):
             motors.append(motor_obj)
 
         for motor in motors:
-            controller.add_motor(motor)
+            self.controller.add_motor(motor)
 
-        controller.reset_all()
-        controller.init_all()
-        controller.pdo_mapping_all()
-        controller.set_switchOn_all()
-        controller.pdo_callback_register_all()
-        controller.sync_start(0.01)
-        controller.set_position(11, pi)
-        controller.set_position(2, pi)
-        controller.set_position(3, pi)
-        controller.set_position(4, pi)
+        self.controller.reset_all()
+        self.controller.init_all()
+        self.controller.pdo_mapping_all()
+        self.controller.set_switchOn_all()
+        self.controller.pdo_callback_register_all()
+        self.controller.sync_start(0.01)
+        self.controller.set_position(11, pi)
+        self.controller.set_position(2, pi)
+        self.controller.set_position(3, pi)
+        self.controller.set_position(4, pi)
         
         
 
