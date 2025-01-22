@@ -9,9 +9,10 @@ class MotorVendorZeroErr(AbstractMotor):
     PULSE_PER_REVOLUTION = 524288  # 한 바퀴당 펄스 수
     
     def __init__(self, node_id, eds_path, zero_offset=0, operation_mode='PROFILE_POSITION',
-                 profile_velocity=1.0, profile_acceleration=1.0, profile_deceleration=1.0):  # rad/s, rad/s², rad/s²
+                 profile_velocity=1.0, profile_acceleration=1.0, profile_deceleration=1.0, name=None):  # name 파라미터 추가
         super().__init__(node_id, eds_path, zero_offset, operation_mode,
-                        profile_velocity, profile_acceleration, profile_deceleration)
+                        profile_velocity, profile_acceleration, profile_deceleration,
+                        name)  # name을 부모 클래스 생성자에 전달
         
     def init(self, operation_mode=None):
         if operation_mode:

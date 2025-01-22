@@ -10,6 +10,8 @@ import json
 import os
 from ament_index_python.packages import get_package_share_directory
 
+from sensor_msgs.msg import JointState
+
 class CANopenManagerNode(Node):
     def __init__(self):
         super().__init__('canopen_manager_node')
@@ -24,6 +26,13 @@ class CANopenManagerNode(Node):
         #self.controller.set_position(3, pi)
         #self.controller.set_position(4, pi)
 
+        # JointState 구독자 생성
+        self.joint_state_sub = self.create_subscription(
+            JointState,
+            'joint_states',  # 토픽 이름
+            self.joint_state_callback,
+            10  # QoS 설정
+        )
 
     def json_open(self):
         # json 파일 경로 설정
@@ -44,7 +53,8 @@ class CANopenManagerNode(Node):
                 operation_mode=motor['operation_mode'],
                 profile_velocity=motor.get('profile_velocity', 0),
                 profile_acceleration=motor.get('profile_acceleration', 0),
-                profile_deceleration=motor.get('profile_deceleration', 0)
+                profile_deceleration=motor.get('profile_deceleration', 0),
+                name=motor.get('name', f"joint_{motor['node_id']}") #기본값 joint_node_id
             )
             motors.append(motor_obj)
 
@@ -58,6 +68,25 @@ class CANopenManagerNode(Node):
         self.controller.set_switchOn_all()
         self.controller.pdo_callback_register_all()
         self.controller.sync_start(0.01)
+
+    def joint_state_callback(self, msg):
+        """JointState 메시지 콜백 함수"""
+        try:
+            # 배열 크기 확인
+            if len(msg.name) != len(msg.position):
+                self.get_logger().error('Invalid JointState message: arrays size mismatch')
+                return
+
+            # 각 조인트에 대해 위치 설정
+            for joint_name, position in zip(msg.name, msg.position):
+                try:
+                    # 이름으로 직접 모터 위치 설정
+                    self.controller.set_position_by_name(joint_name, position)
+                except Exception as e:
+                    self.get_logger().error(f'Failed to set position for joint {joint_name}: {str(e)}')
+
+        except Exception as e:
+            self.get_logger().error(f'Error processing JointState message: {str(e)}')
 
     def on_shutdown(self):
         """노드 종료 시 호출되는 정리 함수"""

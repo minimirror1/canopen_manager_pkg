@@ -31,7 +31,7 @@
             "profile_deceleration": 1.0
         },
         {
-            "name": "motorC",
+            "name": "motorD",
             "vendor_type": "VendorZeroErr",
             "node_id": 4,
             "zero_offset": 81038,

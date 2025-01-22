@@ -21,6 +21,7 @@ class MotorController:
             self.network.connect(interface=interface, channel=channel, bitrate=bitrate)
         # 등록된 모터 리스트/딕셔너리
         self.motors = {}
+        self.name_to_id = {}  # 이름으로 모터 ID를 찾기 위한 매핑 추가
 
     def add_motor(self, motor: AbstractMotor):
         """MotorController가 관리할 모터를 추가한다."""
@@ -34,6 +35,7 @@ class MotorController:
         # 요청 전 대기 시간 설정
         # node.sdo.PAUSE_BEFORE_SEND = 5
         self.motors[motor.node_id] = motor
+        self.name_to_id[motor.name] = motor.node_id  # 이름과 ID 매핑 저장
 
     def all_motors_init_start(self, interval=0.01):
             # 리셋
@@ -178,3 +180,11 @@ class MotorController:
             self.motors[node_id].log_stop()
         else:
             print(f"Node {node_id} not found in motors dictionary.")
+
+    def set_position_by_name(self, name, value):
+        """이름으로 모터를 찾아 위치를 설정"""
+        if name in self.name_to_id:
+            motor_id = self.name_to_id[name]
+            self.set_position(motor_id, value)
+        else:
+            print(f"Motor with name {name} not found")

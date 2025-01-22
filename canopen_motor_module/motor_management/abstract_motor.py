@@ -16,10 +16,11 @@ class AbstractMotor(ABC):
     }
 
     def __init__(self, node_id, eds_path, zero_offset=0, operation_mode='PROFILE_POSITION',
-                 profile_velocity=1.0, profile_acceleration=1.0, profile_deceleration=1.0):  # rad/s, rad/s², rad/s²
+                 profile_velocity=1.0, profile_acceleration=1.0, profile_deceleration=1.0, name=None):  # rad/s, rad/s², rad/s², name 파라미터 추가
         self.operation_mode = operation_mode
         self.node_id = node_id
         self.eds_path = eds_path
+        self.name = name or f"joint_{node_id}"  # name이 없으면 기본값으로 joint_노드ID 사용
         self.node = None  # canopen에서 로드되는 노드 객체 (초기에는 None)
         self.network = None  # network 객체 추가
         # 목표 위치와 현재 위치를 저장하는 변수 추가
