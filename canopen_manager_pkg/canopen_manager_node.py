@@ -10,14 +10,22 @@ import json
 import os
 from ament_index_python.packages import get_package_share_directory
 
-TEST_ID = 11
 class CANopenManagerNode(Node):
     def __init__(self):
         super().__init__('canopen_manager_node')
         self.get_logger().info('CANopen Manager Node has been started')
 
         self.controller = MotorController(channel='can0', bustype='socketcan', bitrate=1000000)
+    
+        self.json_open()
+        self.motor_active_all()
+        #self.controller.set_position(11, pi)
+        #self.controller.set_position(2, pi)
+        #self.controller.set_position(3, pi)
+        #self.controller.set_position(4, pi)
 
+
+    def json_open(self):
         # json 파일 경로 설정
         package_path = get_package_share_directory('canopen_manager_pkg')
         json_path = os.path.join(package_path, 'json_motor_test', 'canopen_motor_list_test.json')
@@ -43,18 +51,22 @@ class CANopenManagerNode(Node):
         for motor in motors:
             self.controller.add_motor(motor)
 
+    def motor_active_all(self):
         self.controller.reset_all()
         self.controller.init_all()
         self.controller.pdo_mapping_all()
         self.controller.set_switchOn_all()
         self.controller.pdo_callback_register_all()
         self.controller.sync_start(0.01)
-        self.controller.set_position(11, pi)
-        self.controller.set_position(2, pi)
-        self.controller.set_position(3, pi)
-        self.controller.set_position(4, pi)
-        
-        
+
+    def on_shutdown(self):
+        """노드 종료 시 호출되는 정리 함수"""
+        try:
+            self.controller.sync_stop()  # sync 통신 중지
+            self.controller.reset_all()  # 모든 모터 리셋
+            self.get_logger().info('CANopen Manager Node has been safely shutdown')
+        except Exception as e:
+            self.get_logger().error(f'Error during shutdown: {str(e)}')
 
 def main(args=None):
     rclpy.init(args=args)
@@ -66,8 +78,11 @@ def main(args=None):
     except KeyboardInterrupt:
         pass
     finally:
+        node.on_shutdown()  # 종료 전 정리 함수 호출
         node.destroy_node()
-        rclpy.shutdown()
+        # context가 아직 활성화 상태인 경우에만 shutdown 호출
+        if rclpy.ok():
+            rclpy.shutdown()
 
 if __name__ == '__main__':
     main()

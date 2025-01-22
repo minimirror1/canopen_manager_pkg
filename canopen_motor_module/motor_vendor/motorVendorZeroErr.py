@@ -167,7 +167,7 @@ class MotorVendorZeroErr(AbstractMotor):
         
         time.sleep(0.001)
         self.node.rpdo[1]['Controlword'].phys = 0x2f
-        # self.node.rpdo[1]['Target Position'].phys = self.node.sdo['Position actual value'].raw
+        self.node.rpdo[1]['Target Position'].phys = self.node.sdo['Position actual value'].raw
         self.node.rpdo[1].transmit()
         time.sleep(0.001)
 

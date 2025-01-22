@@ -92,10 +92,13 @@ class MotorController:
             motor.pdo_callback_register()
 
     def sync_start(self, interval=0.01):
-        self.network.sync.start(interval) # 10ms
         for node_id, motor in self.motors.items():
             motor.set_dt(interval)
-        
+
+        self.network.sync.start(interval) # 10ms
+
+    def sync_stop(self):
+        self.network.sync.stop()        
 
     def set_position_all(self, value):
         """등록된 모든 모터에 동일 위치를 세팅"""
