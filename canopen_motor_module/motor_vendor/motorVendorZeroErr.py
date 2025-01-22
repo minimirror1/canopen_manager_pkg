@@ -2,13 +2,14 @@ from ..motor_management.abstract_motor import AbstractMotor
 import time
 import csv
 from datetime import datetime
+from math import pi
 
 class MotorVendorZeroErr(AbstractMotor):
     """제조사 A 모터에 대한 구체 구현."""
     PULSE_PER_REVOLUTION = 524288  # 한 바퀴당 펄스 수
     
     def __init__(self, node_id, eds_path, zero_offset=0, operation_mode='PROFILE_POSITION',
-                 profile_velocity=162144, profile_acceleration=162144, profile_deceleration=162144):
+                 profile_velocity=1.0, profile_acceleration=1.0, profile_deceleration=1.0):  # rad/s, rad/s², rad/s²
         super().__init__(node_id, eds_path, zero_offset, operation_mode,
                         profile_velocity, profile_acceleration, profile_deceleration)
         
@@ -32,18 +33,30 @@ class MotorVendorZeroErr(AbstractMotor):
         # 모드별 초기화
         self._init_mode_specific_parameters()
 
-        self.plusToRad = 2 * 3.141592653589793 / self.PULSE_PER_REVOLUTION
+        self.plusToRad = 2 * pi / self.PULSE_PER_REVOLUTION
         
         # Disable sync
         self.network.sync.stop()
         
+    def _convert_rad_to_pulse(self, rad_value):
+        """라디안 값을 펄스 카운트로 변환"""
+        return int((rad_value * self.PULSE_PER_REVOLUTION) / (2 * pi))
+
     def _init_mode_specific_parameters(self):
         """모드별 특정 파라미터 초기화"""
         if self.operation_mode == 'PROFILE_POSITION':
-            self.node.sdo['Profile velocity'].raw = self.profile_velocity  #0x6081
-            self.node.sdo['Profile acceleration'].raw = self.profile_acceleration  #0x6083
-            self.node.sdo['Profile deceleration'].raw = self.profile_deceleration  #0x6084
-            print(f'[write] Profile parameters set for Position mode')
+            # 라디안 단위를 펄스 단위로 변환
+            velocity_pulse = self._convert_rad_to_pulse(self.profile_velocity)
+            acceleration_pulse = self._convert_rad_to_pulse(self.profile_acceleration)
+            deceleration_pulse = self._convert_rad_to_pulse(self.profile_deceleration)
+            
+            self.node.sdo['Profile velocity'].raw = velocity_pulse  #0x6081
+            self.node.sdo['Profile acceleration'].raw = acceleration_pulse  #0x6083
+            self.node.sdo['Profile deceleration'].raw = deceleration_pulse  #0x6084
+            print(f'[write] Profile parameters set for Position mode:')
+            print(f'  Velocity: {self.profile_velocity} rad/s -> {velocity_pulse} pulse/s')
+            print(f'  Acceleration: {self.profile_acceleration} rad/s² -> {acceleration_pulse} pulse/s²')
+            print(f'  Deceleration: {self.profile_deceleration} rad/s² -> {deceleration_pulse} pulse/s²')
             
         elif self.operation_mode == 'PROFILE_TORQUE':
             self.node.sdo['Target torque'].raw = 0 #0x6071
@@ -171,18 +184,23 @@ class MotorVendorZeroErr(AbstractMotor):
         self.network.subscribe(self.node.tpdo[2].cob_id, self.node.tpdo[2].on_message)
         self.node.tpdo[2].add_callback(self.tpdo2_callback)
 
-    def set_position(self, value):
-        #print(f"[MotorVendorZeroErr] Set position to {value}, node: {self.node_id}")
+    def set_position(self, value):  # value in radians
+        """모터 위치 명령 (라디안 단위)"""
+        #print(f"[MotorVendorZeroErr] Set position to {value} rad, node: {self.node_id}")
         self.node.rpdo[1]['Controlword'].phys = 0x2f
-        self.target_position = value + self.zero_offset
-        self.node.rpdo[1]['Target Position'].phys = self.target_position
+        
+        # 목표 위치를 라디안 단위로 저장
+        self.target_position = value
+        
+        # 라디안 값을 펄스로 변환한 후 zero_offset(펄스)을 더함
+        position_pulse = self._convert_rad_to_pulse(value) + self.zero_offset
+        self.node.rpdo[1]['Target Position'].phys = position_pulse
         self.node.rpdo[1].transmit()
 
-        #print(f"myzero_offset {self.zero_offset} , target_position {self.target_position}")
+        #print(f"zero_offset: {self.zero_offset} pulse, target_position_pulse: {position_pulse}")
 
         self.node.rpdo[1]['Controlword'].phys = 0x3f
-        self.node.rpdo[1].transmit()        
-        pass
+        self.node.rpdo[1].transmit()
 
     def get_position(self):        
         # self.current_position = self.node.sdo['Position actual value'].raw

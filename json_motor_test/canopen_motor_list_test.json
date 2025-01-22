@@ -6,29 +6,39 @@
             "node_id": 11,            
             "zero_offset": 84303,
             "operation_mode": "PROFILE_POSITION",
-            "profile_velocity": 2144,
-            "profile_acceleration": 2144,
-            "profile_deceleration": 2144
+            "profile_velocity": 1.0,
+            "profile_acceleration": 1.0,
+            "profile_deceleration": 1.0
         },
         {
             "name": "motorB",
             "vendor_type": "VendorZeroErr",
             "node_id": 2,
-            "zero_offset": 84303,
+            "zero_offset": 78500,
             "operation_mode": "PROFILE_POSITION",
-            "profile_velocity": 2144,
-            "profile_acceleration": 2144,
-            "profile_deceleration": 2144
+            "profile_velocity": 1.0,
+            "profile_acceleration": 1.0,
+            "profile_deceleration": 1.0
         },
         {
             "name": "motorC",
             "vendor_type": "VendorZeroErr",
             "node_id": 3,
-            "zero_offset": 84303,
+            "zero_offset": 69238,
             "operation_mode": "PROFILE_POSITION",
-            "profile_velocity": 2144,
-            "profile_acceleration": 2144,
-            "profile_deceleration": 2144
+            "profile_velocity": 1.0,
+            "profile_acceleration": 1.0,
+            "profile_deceleration": 1.0
+        },
+        {
+            "name": "motorC",
+            "vendor_type": "VendorZeroErr",
+            "node_id": 4,
+            "zero_offset": 81038,
+            "operation_mode": "PROFILE_POSITION",
+            "profile_velocity": 1.0,
+            "profile_acceleration": 1.0,
+            "profile_deceleration": 1.0
         }
     ]
 }

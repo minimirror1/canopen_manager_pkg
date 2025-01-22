@@ -1,5 +1,8 @@
 import rclpy
 from rclpy.node import Node
+
+from math import pi
+
 from canopen_motor_module.motor_management.motor_controller import MotorController
 from canopen_motor_module.motor_management.motor_factory import MotorFactory
 
@@ -48,9 +51,10 @@ class CANopenManagerNode(Node):
         controller.set_switchOn_all()
         controller.pdo_callback_register_all()
         controller.sync_start(0.01)
-        controller.set_position(11, 262144)
-        controller.set_position(2, 262144)
-        controller.set_position(3, 262144)
+        controller.set_position(11, pi)
+        controller.set_position(2, pi)
+        controller.set_position(3, pi)
+        controller.set_position(4, pi)
         
         
 
