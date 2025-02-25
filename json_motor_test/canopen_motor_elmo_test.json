@@ -1,0 +1,15 @@
+{
+    "motors": [
+        {
+            "name": "j_l1",
+            "vendor_type": "VendorElmo", 
+            "node_id": 2,            
+            "count_per_revolution": 1000,
+            "zero_offset": 84303,
+            "operation_mode": "PROFILE_POSITION",
+            "profile_velocity": 1.0,
+            "profile_acceleration": 1.0,
+            "profile_deceleration": 1.0
+        }
+    ]
+}

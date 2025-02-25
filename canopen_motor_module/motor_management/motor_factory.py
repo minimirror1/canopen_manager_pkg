@@ -2,7 +2,7 @@ import os
 from ament_index_python.packages import get_package_share_directory
 from ..motor_vendor.motorVendorZeroErr import MotorVendorZeroErr
 from ..motor_vendor.motorVenderTemplate import MotorVendorB
-
+from ..motor_vendor.motorVendorElmo import MotorVendorElmo
 # 필요하다면, 제조사 정보를 바탕으로 인스턴스를 생성해주는 Factory 구현 예시
 class MotorFactory:
     @staticmethod
@@ -20,11 +20,19 @@ class MotorFactory:
         :param profile_deceleration: 프로파일 감속도 (rad/s²)
         :param name: 조인트 이름
         """
+        print(f"Received vendor_type: '{vendor_type}'")  # 디버깅용 출력 추가
+        
         if vendor_type == "VendorZeroErr":
             # EDS 파일 경로 수정
             package_path = get_package_share_directory('canopen_manager_pkg')
             eds_path = os.path.join(package_path, 'config', 'ZeroErr Driver_V1.5.eds')
             return MotorVendorZeroErr(node_id, eds_path, zero_offset, operation_mode,
+                                    profile_velocity, profile_acceleration, profile_deceleration,
+                                    name)
+        elif vendor_type == "VendorElmo":
+            package_path = get_package_share_directory('canopen_manager_pkg')
+            eds_path = os.path.join(package_path, 'config', 'elmo.dcf')
+            return MotorVendorElmo(node_id, eds_path, zero_offset, operation_mode,
                                     profile_velocity, profile_acceleration, profile_deceleration,
                                     name)
         elif vendor_type == "VendorB":

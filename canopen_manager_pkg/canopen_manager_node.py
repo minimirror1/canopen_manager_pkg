@@ -37,7 +37,7 @@ class CANopenManagerNode(Node):
     def json_open(self):
         # json 파일 경로 설정
         package_path = get_package_share_directory('canopen_manager_pkg')
-        json_path = os.path.join(package_path, 'json_motor_test', 'canopen_motor_list_test.json')
+        json_path = os.path.join(package_path, 'json_motor_test', 'canopen_motor_elmo_test.json')
 
         # json 파일 읽기
         with open(json_path, 'r') as f:

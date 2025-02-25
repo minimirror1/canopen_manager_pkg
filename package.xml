@@ -16,5 +16,8 @@
 
   <export>
     <build_type>ament_python</build_type>
+    <data_files>
+      <data_file type="config" name="json_motor_test" src="json_motor_test/"/>
+    </data_files>
   </export>
 </package>
