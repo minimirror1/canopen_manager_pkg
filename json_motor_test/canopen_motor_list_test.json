@@ -1,7 +1,7 @@
 {
     "motors": [
         {
-            "name": "motorA",
+            "name": "j_l1",
             "vendor_type": "VendorZeroErr", 
             "node_id": 11,            
             "zero_offset": 84303,
@@ -11,7 +11,7 @@
             "profile_deceleration": 1.0
         },
         {
-            "name": "motorB",
+            "name": "j_l2",
             "vendor_type": "VendorZeroErr",
             "node_id": 2,
             "zero_offset": 78500,
@@ -21,7 +21,7 @@
             "profile_deceleration": 1.0
         },
         {
-            "name": "motorC",
+            "name": "j_l3",
             "vendor_type": "VendorZeroErr",
             "node_id": 3,
             "zero_offset": 69238,
@@ -31,7 +31,7 @@
             "profile_deceleration": 1.0
         },
         {
-            "name": "motorD",
+            "name": "j_l4",
             "vendor_type": "VendorZeroErr",
             "node_id": 4,
             "zero_offset": 81038,
