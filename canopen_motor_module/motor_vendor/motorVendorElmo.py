@@ -5,47 +5,40 @@ import time
 from math import pi
 import csv
 from datetime import datetime
+import math
 
 class MotorVendorElmo(AbstractMotor):
     """Elmo 모터에 대한 구체 구현."""
-    PULSE_PER_REVOLUTION = 131072  # Elmo 모터의 한 바퀴당 펄스 수
     
     def __init__(self, node_id, eds_path, zero_offset=0, operation_mode='PROFILE_POSITION',
-                 profile_velocity=1.0, profile_acceleration=1.0, profile_deceleration=1.0, name=None):
+                 profile_velocity=1.0, profile_acceleration=1.0, profile_deceleration=1.0, name=None, count_per_revolution=1000):
         super().__init__(node_id, eds_path, zero_offset, operation_mode,
                         profile_velocity, profile_acceleration, profile_deceleration,
-                        name)
+                        name, count_per_revolution)
+
+        self.plusToRad = 2 * pi / self.count_per_revolution
         self.current_velocity_old = 0
         self.dt = 0.001  # 1ms
         
     def init(self, operation_mode=None):
-
-        self.network.nmt.send_command(0x02)  # Stop
-        time.sleep(0.5)
-        self.network.nmt.send_command(0x82)  # Reset
-        time.sleep(1)  # 재설정 후 충분한 대기 시간
-        self.network.nmt.send_command(0x01)  # Reset
-        time.sleep(1)  # 재설정 후 충분한 대기 시간
-        self.network.nmt.send_command(0x80)  # Reset
-        time.sleep(1)  # 재설정 후 충분한 대기 시간
-
         self.node.sdo['controlword'].raw = 0x80  # Fault reset
         # a
-        self.node.sdo['modes_of_operation'].raw = 0x01  # PROFILE_POSITION
+        self.node.sdo['modes_of_operation'].raw = self.OPERATION_MODES[self.operation_mode]  # PROFILE_POSITION
         time.sleep(0.1)
 
+        print(f"count_per_revolution: {self.count_per_revolution}")
         # b
-        self.node.sdo['following_error_window'].raw = 3000
+        self.node.sdo['following_error_window'].raw = self.count_per_revolution * 5
         time.sleep(0.1)
-        self.node.sdo['max_profile_velocity'].raw = 160000
+        self.node.sdo['max_profile_velocity'].raw = self._convert_rad_to_pulse(self.profile_velocity)
         time.sleep(0.1)
-        self.node.sdo['profile_velocity'].raw = 160000
+        self.node.sdo['profile_velocity'].raw = self._convert_rad_to_pulse(self.profile_velocity)
         time.sleep(0.1)
-        self.node.sdo['profile_acceleration'].raw = 160000
+        self.node.sdo['profile_acceleration'].raw = self._convert_rad_to_pulse(self.profile_acceleration)
         time.sleep(0.1)
-        self.node.sdo['profile_deceleration'].raw = 160000
+        self.node.sdo['profile_deceleration'].raw = self._convert_rad_to_pulse(self.profile_deceleration)
         time.sleep(0.1)
-        self.node.sdo['quick_stop_deceleration'].raw = 160000
+        self.node.sdo['quick_stop_deceleration'].raw = self._convert_rad_to_pulse(self.profile_deceleration)
         time.sleep(0.1)
         self.node.sdo['motion_profile_type'].raw = 0
         time.sleep(0.1)
@@ -56,22 +49,22 @@ class MotorVendorElmo(AbstractMotor):
         self.node.sdo['controlword'].raw = 0x0F  # Operation enabled
         time.sleep(0.1)
 
-        # d
-        self.node.sdo['target_position'].raw = 500000
-        time.sleep(0.1)
+        # # d
+        # self.node.sdo['target_position'].raw = 99999999
+        # time.sleep(0.1)
 
-        # e
-        self.node.sdo['controlword'].raw = 0x1F # Start
-        time.sleep(0.1)
+        # # e
+        # self.node.sdo['controlword'].raw = 0x1F # Start
+        # time.sleep(0.1)
 
-        # f
-        self.node.sdo['controlword'].raw = 0x0F # Start
-        time.sleep(0.1)
+        # # f
+        # self.node.sdo['controlword'].raw = 0x0F # Start
+        # time.sleep(0.1)
 
-        for _ in range(50):  # 10초 동안 0.2초 간격으로 50회 반복
-            position_actual_value = self.node.sdo['position_actual_value'].raw
-            print(f"[MotorVendorElmo] Current actual value: {position_actual_value}")
-            time.sleep(0.2)
+        # for _ in range(50):  # 10초 동안 0.2초 간격으로 50회 반복
+        #     position_actual_value = self.node.sdo['position_actual_value'].raw
+        #     print(f"[MotorVendorElmo] Current actual value: {position_actual_value}")
+        #     time.sleep(0.2)
 
         # if operation_mode:
         #     self.operation_mode = operation_mode.upper()
@@ -91,7 +84,7 @@ class MotorVendorElmo(AbstractMotor):
         # self.network.sync.stop()
         
         # 모드별 초기화
-        #self._init_mode_specific_parameters()
+
 
     def pdo_mapping(self):
         print(f"[MotorVendorElmo] PDO mapping for node: {self.node_id}")
@@ -103,38 +96,45 @@ class MotorVendorElmo(AbstractMotor):
         self.node.tpdo[1].clear()
         self.node.tpdo[1].add_variable('statusword')
         self.node.tpdo[1].add_variable('position_actual_value')
+        self.node.tpdo[1].cob_id = 0x180 + self.node_id
+        self.node.tpdo[1].trans_type = 1
+        self.node.tpdo[1].event_timer = 0
         self.node.tpdo[1].enabled = True
 
         self.node.tpdo[2].clear()
         self.node.tpdo[2].add_variable('torque_actual_value')
         self.node.tpdo[2].add_variable('velocity_actual_value')
+        self.node.tpdo[2].cob_id = 0x280 + self.node_id
+        self.node.tpdo[2].trans_type = 1
+        self.node.tpdo[2].event_timer = 0
         self.node.tpdo[2].enabled = True
 
         # RPDO 매핑 (컨트롤러 -> 모터)
         self.node.rpdo[1].clear()
         self.node.rpdo[1].add_variable('controlword')
         self.node.rpdo[1].add_variable('target_position')
+        self.node.rpdo[1].cob_id = 0x200 + self.node_id
+        self.node.rpdo[1].trans_type = 0  # 즉시 적용
+        #self.node.rpdo[1].event_timer = 255   # 이벤트 타이머 비활성화
         self.node.rpdo[1].enabled = True
 
         self.node.rpdo[2].clear()
         self.node.rpdo[2].add_variable('target_torque')
+        self.node.rpdo[2].cob_id = 0x300 + self.node_id
+        self.node.rpdo[2].trans_type = 0  # 즉시 적용
+        #self.node.rpdo[1].event_timer = 255   # 이벤트 타이머 비활성화
         self.node.rpdo[2].enabled = True
 
         # PDO 설정 저장 및 적용
         self.node.nmt.state = 'PRE-OPERATIONAL'
         self.node.tpdo.save()
         self.node.rpdo.save()
+        
         self.node.nmt.state = 'OPERATIONAL'
 
     def set_switchOn(self):
         print(f"[MotorVendorElmo] Set switch on, node: {self.node_id}")
         # Elmo 모터의 상태 전환 시퀀스
-        # self.node.rpdo[1]['controlword'].raw = 0x06  # Shutdown
-        # time.sleep(0.1)
-        # self.node.rpdo[1]['controlword'].raw = 0x07  # Switch on
-        # time.sleep(0.1)
-        # self.node.rpdo[1]['controlword'].raw = 0x0F  # Operation enabled
-        # time.sleep(0.1)
         self.node.sdo['controlword'].raw = 0x06  # Shutdown
         time.sleep(0.1)
         self.node.sdo['controlword'].raw = 0x07  # Switch on
@@ -144,14 +144,35 @@ class MotorVendorElmo(AbstractMotor):
 
     def _convert_rad_to_pulse(self, rad_value):
         """라디안 값을 펄스 카운트로 변환"""
-        return int((rad_value * self.PULSE_PER_REVOLUTION) / (2 * pi))
+        return int((rad_value * self.count_per_revolution) / (2 * pi))
 
-    def set_position(self, value):
-        position_pulse = self._convert_rad_to_pulse(value) + self.zero_offset
+    def set_position(self, value):  # value in radians
+        """모터 위치 명령 (라디안 단위)"""
+        # self.node.rpdo[1]['controlword'].raw = 0x3f
         
-        #self.node.rpdo[1]['target_position'].raw = position_pulse
-        #self.node.rpdo[1].transmit()
+        # # 목표 위치를 라디안 단위로 저장
+        # self.target_position = value
+        
+        # # 라디안 값을 펄스로 변환한 후 zero_offset(펄스)을 더함
+        # position_pulse = self._convert_rad_to_pulse(value) + self.zero_offset
+        # #print(f"position_pulse: {position_pulse}")
+        # self.node.rpdo[1]['target_position'].raw = position_pulse
+        # self.node.rpdo[1]['controlword'].raw = 0x3f
+        # self.node.rpdo[1].transmit()
+
+        # time.sleep(0.001)
+
+        # self.node.rpdo[1]['controlword'].raw = 0x0f
+        # self.node.rpdo[1].transmit()
+
+        position_pulse = self._convert_rad_to_pulse(value) + self.zero_offset   
         self.node.sdo['target_position'].raw = position_pulse
+        self.node.sdo['controlword'].raw = 0x3F # Start
+        time.sleep(0.001)
+
+        
+        self.node.sdo['controlword'].raw = 0x0F # Start
+        time.sleep(0.001)
         
 
     def get_position(self):
@@ -185,14 +206,6 @@ class MotorVendorElmo(AbstractMotor):
 
     def reset(self):
         print(f"[MotorVendorElmo] Reset motor node: {self.node_id}")
-        # self.node.sdo[0x6040].raw = 0x80  # Fault reset
-        # time.sleep(0.1)
-        # self.node.sdo[0x6040].raw = 0x06  # Shutdown
-        # time.sleep(0.1)
-        # self.node.sdo[0x6040].raw = 0x07  # Switch on
-        # time.sleep(0.1)
-        # self.node.sdo[0x6040].raw = 0x0F  # Operation enabled
-        # time.sleep(0.1)
         self.node.sdo['controlword'].raw = 0x80  # Fault reset
         time.sleep(0.1)
         self.node.sdo['controlword'].raw = 0x06  # Shutdown

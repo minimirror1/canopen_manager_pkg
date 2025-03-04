@@ -16,7 +16,7 @@ class AbstractMotor(ABC):
     }
 
     def __init__(self, node_id, eds_path, zero_offset=0, operation_mode='PROFILE_POSITION',
-                 profile_velocity=1.0, profile_acceleration=1.0, profile_deceleration=1.0, name=None):  # rad/s, rad/s², rad/s², name 파라미터 추가
+                 profile_velocity=1.0, profile_acceleration=1.0, profile_deceleration=1.0, name=None, count_per_revolution=1000):  # rad/s, rad/s², rad/s², name 파라미터 추가
         self.operation_mode = operation_mode
         self.node_id = node_id
         self.eds_path = eds_path
@@ -39,7 +39,7 @@ class AbstractMotor(ABC):
         self.profile_velocity = profile_velocity  # rad/s
         self.profile_acceleration = profile_acceleration  # rad/s²
         self.profile_deceleration = profile_deceleration  # rad/s²
-
+        self.count_per_revolution = count_per_revolution  # 한 바퀴당 펄스 수
     @abstractmethod
     def init(self):
         """모터 초기화 절차"""

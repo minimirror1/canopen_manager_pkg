@@ -7,6 +7,8 @@ from math import pi
 class MotorVendorZeroErr(AbstractMotor):
     """제조사 A 모터에 대한 구체 구현."""
     PULSE_PER_REVOLUTION = 524288  # 한 바퀴당 펄스 수
+
+    
     
     def __init__(self, node_id, eds_path, zero_offset=0, operation_mode='PROFILE_POSITION',
                  profile_velocity=1.0, profile_acceleration=1.0, profile_deceleration=1.0, name=None):  # name 파라미터 추가

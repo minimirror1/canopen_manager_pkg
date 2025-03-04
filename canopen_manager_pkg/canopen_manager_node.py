@@ -46,16 +46,10 @@ class CANopenManagerNode(Node):
         # json 파일의 모터 정보를 바탕으로 모터 객체 생성
         motors = []
         for motor in motor_config['motors']:
-            motor_obj = MotorFactory.create_motor(
-                vendor_type=motor['vendor_type'],
-                node_id=motor['node_id'],
-                zero_offset=motor['zero_offset'],
-                operation_mode=motor['operation_mode'],
-                profile_velocity=motor.get('profile_velocity', 0),
-                profile_acceleration=motor.get('profile_acceleration', 0),
-                profile_deceleration=motor.get('profile_deceleration', 0),
-                name=motor.get('name', f"joint_{motor['node_id']}") #기본값 joint_node_id
-            )
+            # 기본값 설정
+            if 'name' not in motor:
+                motor['name'] = f"joint_{motor['node_id']}"
+            motor_obj = MotorFactory.create_motor(motor)
             motors.append(motor_obj)
 
         for motor in motors:
@@ -82,6 +76,7 @@ class CANopenManagerNode(Node):
                 try:
                     # 이름으로 직접 모터 위치 설정
                     self.controller.set_position_by_name(joint_name, position)
+                    self.get_logger().info(f'Set position for joint {joint_name} to {position}')
                 except Exception as e:
                     self.get_logger().error(f'Failed to set position for joint {joint_name}: {str(e)}')
 
